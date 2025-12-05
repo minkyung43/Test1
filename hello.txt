@@ -1,1 +1,175 @@
-Hello Git!
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>🎄 연말 파티 페이지</title>
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background: #f9f9f9;
+        margin: 0;
+        padding: 0;
+        text-align: center;
+    }
+    header {
+        background: #c62828;
+        color: white;
+        padding: 25px 0;
+        font-size: 28px;
+        font-weight: bold;
+    }
+    section {
+        margin: 30px auto;
+        width: 90%;
+        max-width: 600px;
+        background: white;
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    h2 { color: #c62828; }
+    button {
+        padding: 12px 20px;
+        font-size: 16px;
+        background: #c62828;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+    canvas { margin-top: 15px; }
+</style>
+</head>
+
+<body>
+
+<header>🎄 2024 크리스마스 연말 파티</header>
+
+<!-- Countdown -->
+<section>
+    <h2>⏳ 파티까지 남은 시간</h2>
+    <div id="countdown" style="font-size:22px; font-weight:bold;"></div>
+</section>
+
+<!-- Ladder Game -->
+<section>
+    <h2>🎯 사다리타기</h2>
+    <p>이름을 콤마로 구분하여 입력하세요:</p>
+    <input type="text" id="ladderInput" placeholder="예: 민경, 지민, 수현" style="width:90%; padding:10px;">
+    <br>
+    <button onclick="startLadder()">사다리 타기 시작</button>
+    <p id="ladderResult" style="margin-top:15px; font-size:20px;"></p>
+</section>
+
+<!-- Roulette -->
+<section>
+    <h2>🎡 룰렛 돌리기</h2>
+    <canvas id="rouletteCanvas" width="300" height="300"></canvas>
+    <br>
+    <button onclick="spinRoulette()">돌리기</button>
+    <p id="rouletteResult" style="font-size:20px; margin-top:10px;"></p>
+</section>
+
+
+<script>
+// ------------------------
+// D-DAY COUNTDOWN
+// ------------------------
+function updateCountdown() {
+    const target = new Date("2024-12-18T18:00:00"); 
+    const now = new Date();
+    const diff = target - now;
+
+    if (diff <= 0) {
+        document.getElementById("countdown").innerHTML = "🎉 파티가 시작됐습니다!";
+        return;
+    }
+
+    const days = Math.floor(diff / (1000*60*60*24));
+    const hours = Math.floor((diff / (1000*60*60)) % 24);
+    const minutes = Math.floor((diff / (1000*60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+
+    document.getElementById("countdown").innerHTML =
+        `${days}일 ${hours}시간 ${minutes}분 ${seconds}초`;
+}
+setInterval(updateCountdown, 1000);
+updateCountdown();
+
+
+// ------------------------
+// SIMPLE LADDER GAME
+// ------------------------
+function startLadder() {
+    const input = document.getElementById("ladderInput").value.trim();
+    if (!input) return;
+
+    const names = input.split(",").map(n => n.trim()).filter(n => n);
+    if (names.length < 2) {
+        alert("사람이 최소 두 명 필요합니다!");
+        return;
+    }
+
+    const random = names[Math.floor(Math.random() * names.length)];
+    document.getElementById("ladderResult").innerHTML = `🎉 선택된 사람: <b>${random}</b>`;
+}
+
+
+
+// ------------------------
+// SIMPLE ROULETTE
+// ------------------------
+const options = ["치킨", "피자", "케이크", "커피", "쿠키", "음료수"];
+const canvas = document.getElementById("rouletteCanvas");
+const ctx = canvas.getContext("2d");
+let angle = 0;
+
+// 그리기
+function drawRoulette() {
+    const arc = (2 * Math.PI) / options.length;
+
+    for (let i = 0; i < options.length; i++) {
+        ctx.beginPath();
+        ctx.fillStyle = `hsl(${i * 60}, 80%, 70%)`;
+        ctx.moveTo(150,150);
+        ctx.arc(150,150,150,arc*i + angle, arc*(i+1) + angle);
+        ctx.fill();
+
+        ctx.save();
+        ctx.translate(150,150);
+        ctx.rotate(arc * i + arc/2 + angle);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#333";
+        ctx.font = "16px Arial";
+        ctx.fillText(options[i], 130, 5);
+        ctx.restore();
+    }
+}
+
+drawRoulette();
+
+// 돌리기
+function spinRoulette() {
+    let spinAngle = Math.random() * 2000 + 2000;
+    let duration = 40;
+    let interval = setInterval(() => {
+        angle += (spinAngle / duration) * 0.003;
+        spinAngle *= 0.97;
+        duration--;
+
+        ctx.clearRect(0,0,300,300);
+        drawRoulette();
+
+        if (duration <= 0) {
+            clearInterval(interval);
+            const index = Math.floor(((2 * Math.PI) - (angle % (2 * Math.PI))) / (2*Math.PI/options.length)) % options.length;
+            document.getElementById("rouletteResult").innerHTML =
+                `🎉 결과: <b>${options[index]}</b>`;
+        }
+    }, 20);
+}
+</script>
+
+</body>
+</html>
